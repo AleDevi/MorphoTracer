@@ -1,0 +1,63 @@
+{
+  "morphotracer_setup": 1,
+  "name": "measures_only_example",
+  "purpose": "MEASURES",
+  "annotator": "",
+  "scale_mode": "PER_FOLDER",
+  "scale_mm": 10,
+  "id_pattern": "",
+  "axis_from": "",
+  "axis_to": "",
+  "body_part": "",
+  "items": [
+    {
+      "name": "sl",
+      "type": "LENGTH",
+      "required": true,
+      "colour": "#00ff00",
+      "label": "Standard length"
+    },
+    {
+      "name": "tl",
+      "type": "LENGTH",
+      "required": true,
+      "colour": "#00ff00",
+      "label": "Total length"
+    },
+    {
+      "name": "body",
+      "type": "PART",
+      "required": true,
+      "colour": "#ffff00",
+      "label": "Body without fins"
+    },
+    {
+      "name": "caudal",
+      "type": "PART",
+      "required": false,
+      "colour": "#ffff00",
+      "label": "Caudal fin"
+    },
+    {
+      "name": "orange",
+      "type": "COLOUR",
+      "required": true,
+      "colour": "#ff8c1a",
+      "label": "Carotenoid (yellow, orange, red)"
+    },
+    {
+      "name": "black",
+      "type": "COLOUR",
+      "required": true,
+      "colour": "#d0d0d0",
+      "label": "Black (melanin)"
+    },
+    {
+      "name": "iridescent",
+      "type": "COLOUR",
+      "required": false,
+      "colour": "#3d9bff",
+      "label": "Iridescent (blue, violet, white, green)"
+    }
+  ]
+}

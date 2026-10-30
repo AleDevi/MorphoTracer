@@ -1,0 +1,133 @@
+{
+  "morphotracer_setup": 1,
+  "name": "guppy_male_example",
+  "purpose": "BOTH",
+  "annotator": "",
+  "scale_mode": "PER_FOLDER",
+  "scale_mm": 10,
+  "id_pattern": "",
+  "axis_from": "snout",
+  "axis_to": "peduncle_end",
+  "body_part": "body",
+  "items": [
+    {
+      "name": "sl",
+      "type": "LENGTH",
+      "required": true,
+      "colour": "#00ff00",
+      "label": "Standard length: snout tip to the end of the caudal peduncle"
+    },
+    {
+      "name": "tl",
+      "type": "LENGTH",
+      "required": true,
+      "colour": "#00ff00",
+      "label": "Total length: snout tip to the tail tip"
+    },
+    {
+      "name": "snout",
+      "type": "POINT",
+      "required": true,
+      "colour": "#ff00ff",
+      "label": "Snout tip"
+    },
+    {
+      "name": "eye",
+      "type": "POINT",
+      "required": false,
+      "colour": "#ff00ff",
+      "label": "Eye centre"
+    },
+    {
+      "name": "dorsal_base",
+      "type": "POINT",
+      "required": true,
+      "colour": "#ff00ff",
+      "label": "Anterior base of the dorsal fin"
+    },
+    {
+      "name": "gonopodium_base",
+      "type": "POINT",
+      "required": false,
+      "colour": "#ff00ff",
+      "label": "Base of the gonopodium"
+    },
+    {
+      "name": "caudal_base_top",
+      "type": "POINT",
+      "required": false,
+      "colour": "#ff00ff",
+      "label": "Top of the caudal fin base"
+    },
+    {
+      "name": "peduncle_end",
+      "type": "POINT",
+      "required": true,
+      "colour": "#ff00ff",
+      "label": "End of the caudal peduncle, on the midline"
+    },
+    {
+      "name": "caudal_base_bottom",
+      "type": "POINT",
+      "required": false,
+      "colour": "#ff00ff",
+      "label": "Bottom of the caudal fin base"
+    },
+    {
+      "name": "tail_tip",
+      "type": "POINT",
+      "required": false,
+      "colour": "#ff00ff",
+      "label": "Tail tip"
+    },
+    {
+      "name": "body",
+      "type": "PART",
+      "required": true,
+      "colour": "#ffff00",
+      "label": "Body without fins"
+    },
+    {
+      "name": "caudal",
+      "type": "PART",
+      "required": true,
+      "colour": "#ffff00",
+      "label": "Caudal fin"
+    },
+    {
+      "name": "dorsal",
+      "type": "PART",
+      "required": false,
+      "colour": "#ffff00",
+      "label": "Dorsal fin"
+    },
+    {
+      "name": "gonopodium",
+      "type": "PART",
+      "required": false,
+      "colour": "#ffff00",
+      "label": "Gonopodium"
+    },
+    {
+      "name": "orange",
+      "type": "COLOUR",
+      "required": true,
+      "colour": "#ff8c1a",
+      "label": "Carotenoid (yellow, orange, red)"
+    },
+    {
+      "name": "black",
+      "type": "COLOUR",
+      "required": true,
+      "colour": "#d0d0d0",
+      "label": "Black (melanin)"
+    },
+    {
+      "name": "iridescent",
+      "type": "COLOUR",
+      "required": false,
+      "colour": "#3d9bff",
+      "label": "Iridescent (blue, violet, white, green)"
+    }
+  ]
+}
