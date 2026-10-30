@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.morphotracer</groupId>
   <artifactId>MorphoTracer</artifactId>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <name>MorphoTracer</name>
   <description>Fiji plugin: measure animals by hand on photos and save the measures as annotations for training.</description>
 

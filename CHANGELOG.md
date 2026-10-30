@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0 (2026-10-30)
+
+- Tool buttons in the panel (line, segmented line, polygon, freehand, point, multi-point): no need to pick them in
+  the ImageJ toolbar.
+- Marks already made can no longer be picked up and moved by mistake; the marks of the selected item are drawn thicker.
+- **A** goes on to the next item for lengths, parts and counts too (colour classes stay, for the next spot).
+- The keys (A, N, S, 1-9) also work when the panel is in front, not only the photo (not while typing in Fish id or Notes).
+- MorphoTracer reopens the last photo folder at its first photo not done.
+
 ## 0.1.0 (2026-10-30)
 
 First version.

@@ -1,6 +1,6 @@
 # MorphoTracer: Manual
 
-Version 0.1.0. The short step-by-step version is the [Quick guide](QUICK_GUIDE.md).
+Version 0.2.0. The short step-by-step version is the [Quick guide](QUICK_GUIDE.md).
 
 ## 1. What it is for
 
@@ -92,13 +92,18 @@ A photo that was already saved keeps its own scale when it is opened again, what
 
 ## 5. Marking a photo
 
-- Clicking an item (or pressing 1-9 on the photo) selects the right ImageJ tool and writes what to do under the list.
+- Clicking an item (or pressing 1-9) selects the right ImageJ tool and writes what to do under the list. The *Tool*
+  buttons switch to another tool (e.g. *Segmented line* for a bent fish, *Freehand* for a spot edge).
 - **A** adds the current selection to the selected item, with its name (`body`, `orange_3`, `dorsal_base`) and the
-  item's colour. Points are added as soon as they are clicked, and the panel moves to the next item.
+  item's colour. Points are added as soon as they are clicked. After a point, a length, a part or a count the panel
+  moves to the next item; after a spot it stays on the colour class for the next spot.
 - A new Length, Point or Count replaces the old one of the same item; a new Part piece or spot is added to the others.
 - **Remove last** removes the last mark of the selected item. **N** skips an optional point.
-- Marks are drawn over the photo (overlay), with their names. The photo itself is never changed or saved.
-- The keys A, N, S and 1-9 work when the photo window is in front; they are not passed on to ImageJ.
+- Marks are drawn over the photo (overlay), with their names; those of the selected item are thicker. They cannot be
+  selected or moved by clicking: to change one, select its item and *Remove last*. The photo itself is never changed.
+- The keys A, N, S and 1-9 work when the photo or the panel is in front (not while typing in Fish id or Notes); they
+  are not passed on to ImageJ.
+- At start MorphoTracer reopens the last photo folder, at its first photo not done.
 
 Colours in the list: `[x]` done, `[!]` required and missing, `[ ]` optional and missing. Photo list: `[x]` complete,
 `[~]` saved but incomplete, `[ ]` not done.

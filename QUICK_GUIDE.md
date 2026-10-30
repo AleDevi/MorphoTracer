@@ -1,11 +1,11 @@
 # MorphoTracer: Quick guide
 
-Version 0.1.0. What to do, step by step. How it works is in the [Manual](MANUAL.md).
+Version 0.2.0. What to do, step by step. How it works is in the [Manual](MANUAL.md).
 
 ## Install (once)
 
 1. Close Fiji.
-2. Copy `MorphoTracer_-0.1.0.jar` into the `plugins` folder of Fiji (`Fiji.app\plugins`).
+2. Copy `MorphoTracer_-0.2.0.jar` into the `plugins` folder of Fiji (`Fiji.app\plugins`).
 3. Open Fiji: the menu **Plugins > MorphoTracer** opens the panel.
 
 To update: delete the old `MorphoTracer_-*.jar` from `plugins`, copy the new one, restart Fiji. Setups and results are kept.
@@ -25,7 +25,8 @@ To update: delete the old `MorphoTracer_-*.jar` from `plugins`, copy the new one
    - **Shift+S**: the new scale is also used by the next photos.
    - **No scale possible**: sizes stay in pixels, mm columns are `NA`.
    - In *Once per folder* or *Carry forward* mode the next photos already have the scale: check the line *Scale:* and go on.
-3. **Items**: the panel selects the first one to do and the right tool. For each item:
+3. **Items**: the panel selects the first one to do and the right tool (the *Tool* buttons change it, e.g. to
+   *Segmented line* or *Freehand*). After each mark it goes on to the next item. For each item:
    - **Point** (landmark): click on the photo, it goes to the next point by itself. Not visible? Press **N**.
    - **Length**: draw a line (straight, or segmented to follow a bent fish), press **A**.
    - **Part** (body, caudal fin...): draw around it with the polygon or freehand tool, press **A**.
@@ -34,6 +35,9 @@ To update: delete the old `MorphoTracer_-*.jar` from `plugins`, copy the new one
    - Wrong? **Remove last** removes the last mark of the selected item. Keys **1-9** select an item.
 4. **Fish id**: read from the file name if the setup has a pattern, otherwise type it.
 5. **Save fish**: it checks what is missing, saves, and opens the next photo. *Save anyway* saves an incomplete fish (marked `complete = FALSE`).
+
+To go on another day: open *Plugins > MorphoTracer*; it reopens the last photo folder at the first photo not done
+(or choose the folder again with **Photo folder...** and the same setup). Everything saved is kept.
 
 To correct a fish later: choose it in the photo list (`[x]` done, `[~]` incomplete, `[ ]` to do), change it, **Save fish** again.
 

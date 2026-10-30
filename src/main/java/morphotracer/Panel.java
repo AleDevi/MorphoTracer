@@ -105,6 +105,7 @@ public class Panel extends JFrame {
         MorphoTracer_.writeExamples();
         build();
         loadSetupNames(Prefs.get("morphotracer.setup", MorphoTracer_.EXAMPLES[0]));
+        reopenLastFolder();
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(keys);
         addWindowListener(new WindowAdapter() {
             @Override
@@ -176,6 +177,9 @@ public class Panel extends JFrame {
         JPanel actions = new JPanel();
         actions.setLayout(new BoxLayout(actions, BoxLayout.Y_AXIS));
         actions.add(row(hint));
+        actions.add(row(new JLabel("Tool:"), tool("Line", "line"), tool("Segmented line", "polyline"),
+                tool("Polygon", "polygon"), tool("Freehand", "freehand"), tool("Point", "point"),
+                tool("Multi-point", "multipoint")));
         actions.add(row(button("Add selection [A]", new Runnable() {
             public void run() {
                 add();
@@ -254,6 +258,16 @@ public class Panel extends JFrame {
         return p;
     }
 
+    static JButton tool(String text, final String name) {
+        JButton b = button(text, new Runnable() {
+            public void run() {
+                IJ.setTool(name);
+            }
+        });
+        b.setMargin(new java.awt.Insets(1, 4, 1, 4));
+        return b;
+    }
+
     static JButton button(String text, final Runnable r) {
         JButton b = new JButton(text);
         b.addActionListener(new java.awt.event.ActionListener() {
@@ -319,6 +333,16 @@ public class Panel extends JFrame {
             return;
         photosDir = new File(dc.getDirectory());
         Prefs.set("morphotracer.photos", photosDir.getPath());
+        photos = listImages(photosDir);
+        openStore();
+    }
+
+    /** Start where the last session stopped: the last photo folder, at its first photo not done. */
+    void reopenLastFolder() {
+        String last = Prefs.get("morphotracer.photos", "");
+        if (last.isEmpty() || !new File(last).isDirectory())
+            return;
+        photosDir = new File(last);
         photos = listImages(photosDir);
         openStore();
     }
@@ -502,7 +526,8 @@ public class Panel extends JFrame {
                 return;
             }
         }
-        hint("Points done. Next: pick an item, or Save fish.");
+        hint("Everything after this item is done: check the list, then Save fish.");
+        drawOverlay();
     }
 
     void selectTool() {
@@ -586,7 +611,8 @@ public class Panel extends JFrame {
         imp.deleteRoi();
         dirty = true;
         refreshItems();
-        if (it.type == Item.Type.POINT)
+        // one mark per item: go on to the next one; colour classes stay for the next spot
+        if (it.type != Item.Type.COLOUR)
             selectNext();
         else
             drawOverlay();
@@ -834,6 +860,8 @@ public class Panel extends JFrame {
             c.setStrokeWidth(sel != null && sel.name.equals(item) ? 2 : 1);
             ov.add(c);
         }
+        // marks already made cannot be picked up and moved by mistake
+        ov.selectable(false);
         ov.drawNames(true);
         ov.drawLabels(true);
         ov.setLabelColor(Color.WHITE);
@@ -856,12 +884,16 @@ public class Panel extends JFrame {
         JOptionPane.showMessageDialog(this, s, "MorphoTracer", JOptionPane.WARNING_MESSAGE);
     }
 
-    /** Keys typed on the photo window: handled here and not passed to ImageJ. */
+    /** Keys typed on the photo or the panel: handled here and not passed to ImageJ. */
     boolean key(KeyEvent e) {
         if (imp == null || imp.getWindow() == null || e.isControlDown() || e.isAltDown() || e.isMetaDown())
             return false;
-        Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
-        if (w != imp.getWindow())
+        KeyboardFocusManager fm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        Window w = fm.getFocusedWindow();
+        boolean photo = w instanceof ImageWindow && ((ImageWindow) w).getImagePlus() == imp;
+        // in the panel too, except while typing in a text field
+        boolean panel = w == this && !(fm.getFocusOwner() instanceof javax.swing.text.JTextComponent);
+        if (!photo && !panel)
             return false;
         int code = e.getKeyCode();
         char ch = Character.toLowerCase(e.getKeyChar());
