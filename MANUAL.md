@@ -1,6 +1,6 @@
 # MorphoTracer: Manual
 
-Version 0.3.0. The short step-by-step version is the [Quick guide](QUICK_GUIDE.md).
+Version 0.3.1. The short step-by-step version is the [Quick guide](QUICK_GUIDE.md).
 
 ## 1. What it is for
 
@@ -114,8 +114,13 @@ A photo that was already saved keeps its own scale when it is opened again, what
 
 ## 5. Marking a photo
 
-- Clicking an item (or pressing 1-9) selects the right ImageJ tool and writes what to do under the list. The *Tool*
-  buttons switch to another tool (e.g. *Segmented line* for a bent fish, *Freehand* for a spot edge).
+- Clicking an item (or pressing 1-9) selects the right ImageJ tool and writes what to do under the list. The
+  *Tools for <item>* buttons switch to another tool that fits it (e.g. *Segmented line* for a bent fish, *Freehand*
+  for a spot edge); the others are greyed out.
+- Each item accepts only its own kind of selection: Point items only a point (Point tool), Lengths only a straight or
+  segmented line, Parts and Colour classes only a polygon or freehand outline (not a rectangle, oval or wand
+  selection), Counts only points (Multi-point). Anything else is refused with a message and not added, so an area
+  cannot be traced by mistake with the segmented line.
 - **A** adds the current selection to the selected item, with its name (`body`, `orange_3`, `dorsal_base`) and the
   item's colour. Points are added as soon as they are clicked. After a point, a length, a part or a count the panel
   moves to the next item; after a spot it stays on the colour class for the next spot.

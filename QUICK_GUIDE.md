@@ -1,11 +1,11 @@
 # MorphoTracer: Quick guide
 
-Version 0.3.0. What to do, step by step. How it works is in the [Manual](MANUAL.md).
+Version 0.3.1. What to do, step by step. How it works is in the [Manual](MANUAL.md).
 
 ## Install (once)
 
 1. Close Fiji.
-2. Copy `MorphoTracer_-0.3.0.jar` into the `plugins` folder of Fiji (`Fiji.app\plugins`).
+2. Copy `MorphoTracer_-0.3.1.jar` into the `plugins` folder of Fiji (`Fiji.app\plugins`).
 3. Open Fiji: the menu **Plugins > MorphoTracer** opens the panel.
 
 To update: delete the old `MorphoTracer_-*.jar` from `plugins`, copy the new one, restart Fiji. Setups and results are kept.
@@ -27,8 +27,8 @@ To update: delete the old `MorphoTracer_-*.jar` from `plugins`, copy the new one
    - **Shift+S**: the new scale is also used by the next photos.
    - **No scale possible**: sizes stay in pixels, mm columns are `NA`.
    - In *Once per folder* or *Carry forward* mode the next photos already have the scale: check the line *Scale:* and go on.
-4. **Items**: the panel selects the first one to do and the right tool (the *Tool* buttons change it, e.g. to
-   *Segmented line* or *Freehand*). After each mark it goes on to the next item. For each item:
+4. **Items**: the panel selects the first one to do and the right tool. *Tools for <item>* shows only the tools that
+   fit it (e.g. *Polygon* or *Freehand* for an area); a mark made with another tool is refused. After each mark it goes on to the next item. For each item:
    - **Point** (landmark): click on the photo, it goes to the next point by itself. Not visible? Press **N**.
    - **SL**: segmented line from the snout tip to the end of the caudal peduncle (click at each bend, double-click
      at the end), **A**. *snout* and *peduncle_end* are set by its ends.

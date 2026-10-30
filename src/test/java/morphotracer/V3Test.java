@@ -140,4 +140,23 @@ public class V3Test {
         s.item("sl").continues = "tl";
         assertFalse(s.problems().isEmpty());
     }
+
+    @Test
+    public void onlyTheRightToolIsAccepted() {
+        Roi polyline = new PolygonRoi(new float[] {0, 10, 20}, new float[] {0, 10, 0}, 3, Roi.POLYLINE);
+        Roi polygon = new PolygonRoi(new float[] {0, 10, 20}, new float[] {0, 10, 0}, 3, Roi.POLYGON);
+        Roi freehand = new PolygonRoi(new float[] {0, 10, 20}, new float[] {0, 10, 0}, 3, Roi.FREEROI);
+        Roi freeline = new PolygonRoi(new float[] {0, 10, 20}, new float[] {0, 10, 0}, 3, Roi.FREELINE);
+        assertFalse(Measures.accepts(Item.Type.PART, polyline));      // an area traced with a segmented line
+        assertFalse(Measures.accepts(Item.Type.COLOUR, new Line(0, 0, 5, 5)));
+        assertFalse(Measures.accepts(Item.Type.COLOUR, new Roi(0, 0, 5, 5)));   // rectangle
+        assertTrue(Measures.accepts(Item.Type.COLOUR, polygon));
+        assertTrue(Measures.accepts(Item.Type.PART, freehand));
+        assertTrue(Measures.accepts(Item.Type.LENGTH, polyline));
+        assertTrue(Measures.accepts(Item.Type.LENGTH, new Line(0, 0, 5, 5)));
+        assertFalse(Measures.accepts(Item.Type.LENGTH, freeline));
+        assertFalse(Measures.accepts(Item.Type.LENGTH, polygon));
+        assertTrue(Measures.accepts(Item.Type.POINT, new PointRoi(3, 3)));
+        assertFalse(Measures.accepts(Item.Type.POINT, polygon));
+    }
 }

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 (2026-10-30)
+
+- Each item accepts only its own tools: points only with the Point tool, lengths only with Line or Segmented line,
+  areas (parts and colour spots) only with Polygon or Freehand, counts with Multi-point. A selection made with
+  another tool is refused with a message and is not added (e.g. a spot traced by mistake with the segmented line).
+- The *Tools for <item>* buttons enable only the tools that fit the selected item.
+
 ## 0.3.0 (2026-10-30)
 
 - **SL and TL as one path**: SL is a segmented line from the snout to the end of the caudal peduncle; its two ends

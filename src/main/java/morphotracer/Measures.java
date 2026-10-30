@@ -51,6 +51,43 @@ public class Measures {
         return out;
     }
 
+    /** ImageJ tools that may draw an item: points with the point tool, lengths with a straight or segmented line,
+     *  areas with a polygon or freehand outline, counts with the multi-point tool. */
+    public static List<String> tools(Item.Type t) {
+        switch (t) {
+            case POINT: return java.util.Arrays.asList("point");
+            case COUNT: return java.util.Arrays.asList("multipoint", "point");
+            case LENGTH: return java.util.Arrays.asList("line", "polyline");
+            case PART: case COLOUR: return java.util.Arrays.asList("polygon", "freehand");
+            default: return new ArrayList<String>();
+        }
+    }
+
+    /** Is this selection the right kind for the item? (an area traced with a segmented line is refused, etc.) */
+    public static boolean accepts(Item.Type t, Roi r) {
+        if (r == null)
+            return false;
+        int k = r.getType();
+        switch (t) {
+            case POINT: return r instanceof PointRoi && r.getFloatPolygon().npoints >= 1;
+            case COUNT: return r instanceof PointRoi;
+            case LENGTH: return k == Roi.LINE || k == Roi.POLYLINE;
+            case PART: case COLOUR: return k == Roi.POLYGON || k == Roi.FREEROI;
+            default: return false;
+        }
+    }
+
+    /** What an item needs, in words. */
+    public static String needs(Item.Type t) {
+        switch (t) {
+            case POINT: return "a point: use the Point tool";
+            case COUNT: return "a count: use the Multi-point tool";
+            case LENGTH: return "a length: use Line or Segmented line";
+            case PART: case COLOUR: return "an area: use Polygon or Freehand";
+            default: return "computed: nothing to draw";
+        }
+    }
+
     /** Morphology columns of a setup, after the fixed ones. */
     public static List<String> columnNames(Setup s) {
         List<String> c = new ArrayList<String>();

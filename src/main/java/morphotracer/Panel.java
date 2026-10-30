@@ -195,7 +195,7 @@ public class Panel extends JFrame {
         JPanel actions = new JPanel();
         actions.setLayout(new BoxLayout(actions, BoxLayout.Y_AXIS));
         actions.add(row(hint));
-        actions.add(row(new JLabel("Tool:"), tool("Line", "line"), tool("Segmented line", "polyline"),
+        actions.add(row(toolLabel, tool("Line", "line"), tool("Segmented line", "polyline"),
                 tool("Polygon", "polygon"), tool("Freehand", "freehand"), tool("Point", "point"),
                 tool("Multi-point", "multipoint")));
         actions.add(row(button("Add selection [A]", new Runnable() {
@@ -276,13 +276,18 @@ public class Panel extends JFrame {
         return p;
     }
 
-    static JButton tool(String text, final String name) {
+    final JLabel toolLabel = new JLabel("Tool:");
+    final Map<String, JButton> tools = new LinkedHashMap<String, JButton>();
+
+    /** A tool button; only the tools that fit the selected item are enabled. */
+    JButton tool(String text, final String name) {
         JButton b = button(text, new Runnable() {
             public void run() {
                 IJ.setTool(name);
             }
         });
         b.setMargin(new java.awt.Insets(1, 4, 1, 4));
+        tools.put(name, b);
         return b;
     }
 
@@ -582,6 +587,10 @@ public class Panel extends JFrame {
         if (it == null)
             return;
         doneButton.setEnabled(it.type == Item.Type.COLOUR);
+        List<String> ok = Measures.tools(it.type);
+        for (Map.Entry<String, JButton> e : tools.entrySet())
+            e.getValue().setEnabled(ok.contains(e.getKey()));
+        toolLabel.setText("Tools for " + it.name + ":");
         doneButton.setText(done.contains(it.name) ? "Not all spots done" : "All spots done");
         String what = it.label.isEmpty() ? it.name : it.name + " (" + it.label + ")";
         switch (it.type) {
@@ -623,16 +632,12 @@ public class Panel extends JFrame {
             hint("Draw on the photo first.");
             return;
         }
-        String wrong = null;
-        switch (it.type) {
-            case POINT: if (!(r instanceof PointRoi)) wrong = "a point"; break;
-            case COUNT: if (!(r instanceof PointRoi)) wrong = "points (multi-point tool)"; break;
-            case LENGTH: if (!r.isLine()) wrong = "a line"; break;
-            case PART: case COLOUR: if (!r.isArea()) wrong = "an area (polygon or freehand)"; break;
-            default: wrong = "nothing (it is computed)";
-        }
-        if (wrong != null) {
-            hint(it.name + " needs " + wrong + ".");
+        if (!Measures.accepts(it.type, r)) {
+            java.awt.Toolkit.getDefaultToolkit().beep();
+            error(it.name + " is " + Measures.needs(it.type) + ".\nThe selection on the photo is a "
+                    + r.getTypeAsString().toLowerCase(Locale.ROOT) + ": it was not added. Draw it again with the right tool.");
+            imp.deleteRoi();
+            selectTool();
             return;
         }
         // marks are kept in the coordinates of the original photo, whatever the view

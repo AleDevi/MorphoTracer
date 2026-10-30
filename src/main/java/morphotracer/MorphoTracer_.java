@@ -14,7 +14,7 @@ import java.util.Map;
 /** Plugins > MorphoTracer: opens the panel. Setups live in ~/.morphotracer/setups (one JSON file each). */
 public class MorphoTracer_ implements PlugIn {
 
-    public static final String VERSION = "0.3.0";
+    public static final String VERSION = "0.3.1";
     static final String[] EXAMPLES = {"guppy_male_example", "measures_only_example"};
 
     @Override
