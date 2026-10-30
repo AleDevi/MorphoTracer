@@ -18,6 +18,8 @@ public class Measures {
 
     public static final String ITEM = "mt_item";
     public static final String SCALE = "scale";
+    /** Property of a point set by the end of a line: the length item that set it. */
+    public static final String AUTO = "mt_auto";
 
     /** Column -> value, in the setup's order (morphology.csv). */
     public final Map<String, String> columns = new LinkedHashMap<String, String>();
@@ -59,6 +61,8 @@ public class Measures {
                 case COLOUR:
                     c.add(it.name + "_area_mm2");
                     c.add(it.name + "_n");
+                    if (!s.percentOf.isEmpty())
+                        c.add(it.name + "_percent");
                     if (s.training())
                         c.add(it.name + "_complete");
                     break;
@@ -81,11 +85,23 @@ public class Measures {
                         m.xy.put(it.name, new double[] {p.xpoints[0], p.ypoints[0]});
                 }
             }
+        Double reference = null;
+        if (!s.percentOf.isEmpty()) {
+            double a = 0;
+            boolean all = true;
+            for (String n : s.percentOf) {
+                List<Roi> r = of(rois, n);
+                all &= !r.isEmpty();
+                for (Roi x : r)
+                    a += areaPx(x);
+            }
+            reference = all && a > 0 ? a : null;
+        }
         for (Item it : s.items) {
             List<Roi> r = of(rois, it.name);
             switch (it.type) {
                 case LENGTH: {
-                    Double px = r.isEmpty() ? null : r.get(0).getLength();
+                    Double px = lengthPx(s, it, rois, 0);
                     m.columns.put(it.name + "_mm", Csv.num(mm(px, ppm)));
                     m.shown.put(it.name, px == null ? "" : len(px, ppm));
                     break;
@@ -120,6 +136,8 @@ public class Measures {
                     Double v = r.isEmpty() && !complete ? null : a;
                     m.columns.put(it.name + "_area_mm2", Csv.num(mm2(v, ppm)));
                     m.columns.put(it.name + "_n", r.isEmpty() && !complete ? Csv.NA : String.valueOf(r.size()));
+                    if (!s.percentOf.isEmpty())
+                        m.columns.put(it.name + "_percent", Csv.num(v == null || reference == null ? null : 100 * v / reference));
                     if (s.training())
                         m.columns.put(it.name + "_complete", Csv.bool(complete));
                     m.shown.put(it.name, r.size() + (r.size() == 1 ? " spot" : " spots")
@@ -185,6 +203,81 @@ public class Measures {
                 out.add(it.name + ": not confirmed 'all spots done'");
         }
         return out;
+    }
+
+    /** Length of a line in pixels, plus the length it continues (TL = SL + tail); null when something is missing. */
+    static Double lengthPx(Setup s, Item it, List<Roi> rois, int depth) {
+        List<Roi> r = of(rois, it.name);
+        if (r.isEmpty() || depth > s.items.size())
+            return null;
+        double px = r.get(0).getLength();
+        if (it.continues.isEmpty())
+            return px;
+        Item base = s.item(it.continues);
+        Double b = base == null ? null : lengthPx(s, base, rois, depth + 1);
+        return b == null ? null : b + px;
+    }
+
+    /** {x start, y start, x end, y end} of a line ROI. */
+    public static double[] ends(Roi r) {
+        if (r instanceof ij.gui.Line && r.getType() == Roi.LINE) {
+            ij.gui.Line l = (ij.gui.Line) r;
+            return new double[] {l.x1d, l.y1d, l.x2d, l.y2d};
+        }
+        FloatPolygon p = r.getFloatPolygon();
+        int n = p.npoints - 1;
+        return new double[] {p.xpoints[0], p.ypoints[0], p.xpoints[n], p.ypoints[n]};
+    }
+
+    /** The same line with its first vertex moved to (x, y). */
+    public static Roi withStart(Roi r, double x, double y) {
+        Roi out;
+        if (r instanceof ij.gui.Line && r.getType() == Roi.LINE) {
+            ij.gui.Line l = (ij.gui.Line) r;
+            out = new ij.gui.Line(x, y, l.x2d, l.y2d);
+        } else {
+            FloatPolygon p = r.getFloatPolygon();
+            float[] xs = p.xpoints.clone(), ys = p.ypoints.clone();
+            xs[0] = (float) x;
+            ys[0] = (float) y;
+            out = new ij.gui.PolygonRoi(xs, ys, p.npoints, Roi.POLYLINE);
+        }
+        View.copyLabels(r, out);
+        return out;
+    }
+
+    /** After a length is drawn: snap it to the end of the length it continues, set its end points, and move the
+     *  lengths that continue it. Works on ROIs in original photo coordinates; returns the (snapped) line. */
+    public static Roi placeLength(Setup s, Item it, Roi line, List<Roi> rois) {
+        if (!it.continues.isEmpty()) {
+            List<Roi> base = of(rois, it.continues);
+            if (!base.isEmpty()) {
+                double[] e = ends(base.get(0));
+                line = withStart(line, e[2], e[3]);
+            }
+        }
+        rois.removeAll(of(rois, it.name));
+        line.setName(it.name);
+        line.setProperty(ITEM, it.name);
+        rois.add(line);
+        double[] e = ends(line);
+        setPoint(rois, it.from, e[0], e[1], it.name);
+        setPoint(rois, it.to, e[2], e[3], it.name);
+        for (Item f : s.items)
+            if (f.type == Item.Type.LENGTH && f.continues.equals(it.name) && !of(rois, f.name).isEmpty())
+                placeLength(s, f, of(rois, f.name).get(0), rois);
+        return line;
+    }
+
+    static void setPoint(List<Roi> rois, String item, double x, double y, String by) {
+        if (item == null || item.isEmpty())
+            return;
+        rois.removeAll(of(rois, item));
+        PointRoi p = new PointRoi(x, y);
+        p.setName(item);
+        p.setProperty(ITEM, item);
+        p.setProperty(AUTO, by);
+        rois.add(p);
     }
 
     static Double mm(Double px, Double ppm) {

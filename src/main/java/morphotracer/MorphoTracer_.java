@@ -8,12 +8,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Map;
 
 /** Plugins > MorphoTracer: opens the panel. Setups live in ~/.morphotracer/setups (one JSON file each). */
 public class MorphoTracer_ implements PlugIn {
 
-    public static final String VERSION = "0.2.0";
+    public static final String VERSION = "0.3.0";
     static final String[] EXAMPLES = {"guppy_male_example", "measures_only_example"};
 
     @Override
@@ -41,8 +42,26 @@ public class MorphoTracer_ implements PlugIn {
         dir.mkdirs();
         for (String n : EXAMPLES) {
             File f = new File(dir, n + ".json");
-            if (!f.exists())
-                Setup.fromMap((Map<String, Object>) Json.parse(example(n))).save(f);
+            String text = example(n);
+            int version = (int) Json.num((Map<String, Object>) Json.parse(text), "example_version", 0);
+            if (f.exists()) {
+                int old = 0;
+                try {
+                    old = (int) Json.num((Map<String, Object>) Json.parse(
+                            new String(Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8)), "example_version", 0);
+                } catch (RuntimeException e) {
+                    old = 0;
+                }
+                if (old >= version)
+                    continue;
+                // a newer example: keep the old file (maybe edited) under another name
+                File keep = new File(dir, n + "_before_" + VERSION.replace('.', '_') + ".json");
+                if (!keep.exists())
+                    Files.move(f.toPath(), keep.toPath());
+            }
+            Setup.fromMap((Map<String, Object>) Json.parse(text)).save(f);
+            // keep the example version, which Setup does not store
+            Files.write(f.toPath(), text.getBytes(StandardCharsets.UTF_8));
         }
     }
 

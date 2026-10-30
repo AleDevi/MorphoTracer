@@ -64,6 +64,11 @@ public class Panel extends JFrame {
     int index = -1;
     ImagePlus imp;
     int origW, origH;
+    ij.process.ImageProcessor origIp;
+    View view = View.NONE;
+    final javax.swing.JCheckBox viewForNext = new javax.swing.JCheckBox("also for the next photos of this folder", true);
+    final JLabel viewLabel = new JLabel("as taken");
+    final Map<String, View> folderViews = new java.util.HashMap<String, View>();
     List<Roi> rois = new ArrayList<Roi>();
     List<String> done = new ArrayList<String>();
     Scale scale = Scale.toSet();
@@ -146,6 +151,19 @@ public class Panel extends JFrame {
             }
         })));
         top.add(row(new JLabel("Fish id:"), fishId));
+        top.add(row(new JLabel("View:"), viewLabel, button("Rotate left", new Runnable() {
+            public void run() {
+                setView(view.turnLeft());
+            }
+        }), button("Rotate right", new Runnable() {
+            public void run() {
+                setView(view.turnRight());
+            }
+        }), button("Mirror", new Runnable() {
+            public void run() {
+                setView(view.flip());
+            }
+        }), viewForNext));
         top.add(row(new JLabel("Scale:"), scaleLabel));
         top.add(row(button("Draw scale [S]", new Runnable() {
             public void run() {
@@ -430,21 +448,19 @@ public class Panel extends JFrame {
             error("Could not open " + f.getName());
             return;
         }
-        if (imp != null) {
-            imp.changes = false;
-            imp.close();
-        }
         index = k;
-        imp = next;
-        origW = imp.getWidth();
-        origH = imp.getHeight();
-        imp.show();
-        ImageWindow win = imp.getWindow();
-        if (win != null) {
-            ImageCanvas c = win.getCanvas();
-            c.addMouseListener(pointClick);
-        }
+        origW = next.getWidth();
+        origH = next.getHeight();
+        origIp = next.getProcessor();
         String key = keyOf(k);
+        Map<String, String> saved = store.row(key);
+        if (saved != null && saved.get("view") != null)
+            view = View.parse(saved.get("view"));
+        else if (folderViews.containsKey(folderOf(f)))
+            view = folderViews.get(folderOf(f));
+        else
+            view = store.lastView(folderOf(f));
+        show(f.getName());
         try {
             rois = Store.readRois(store.roiFile(key));
         } catch (IOException e) {
@@ -471,6 +487,37 @@ public class Panel extends JFrame {
         if (!scale.set())
             hint("Scale first: draw a line over a known length (line tool), then press S.");
         IJ.setTool(scale.set() ? Toolbar.POINT : Toolbar.LINE);
+    }
+
+    /** Show the photo as the view says (the original is kept for the marks). */
+    void show(String title) {
+        java.awt.Point at = imp != null && imp.getWindow() != null ? imp.getWindow().getLocation() : null;
+        if (imp != null) {
+            imp.changes = false;
+            imp.close();
+        }
+        imp = new ImagePlus(title, view.apply(origIp));
+        imp.show();
+        ImageWindow win = imp.getWindow();
+        if (win != null) {
+            if (at != null)
+                win.setLocation(at);
+            ImageCanvas c = win.getCanvas();
+            c.addMouseListener(pointClick);
+        }
+        viewLabel.setText(view.describe());
+    }
+
+    void setView(View v) {
+        if (imp == null)
+            return;
+        view = v;
+        File f = photos.get(index);
+        if (viewForNext.isSelected())
+            folderViews.put(folderOf(f), v);
+        dirty = true;
+        show(f.getName());
+        drawOverlay();
     }
 
     boolean askSave() {
@@ -539,8 +586,11 @@ public class Panel extends JFrame {
         String what = it.label.isEmpty() ? it.name : it.name + " (" + it.label + ")";
         switch (it.type) {
             case LENGTH:
-                IJ.setTool(Toolbar.LINE);
-                hint(what + ": draw a line (straight, or segmented to follow the fish), then press A.");
+                IJ.setTool("polyline");
+                if (it.continues.isEmpty())
+                    hint(what + ": segmented line (click each bend, double-click to end), then press A.");
+                else
+                    hint(what + ": go on from the end of " + it.continues + " (the line is joined there), double-click, A.");
                 break;
             case POINT:
                 IJ.setTool(Toolbar.POINT);
@@ -585,6 +635,8 @@ public class Panel extends JFrame {
             hint(it.name + " needs " + wrong + ".");
             return;
         }
+        // marks are kept in the coordinates of the original photo, whatever the view
+        r = view.toOriginal(r, origW, origH);
         Roi c;
         if (it.type == Item.Type.POINT) {
             ij.process.FloatPolygon p = r.getFloatPolygon();
@@ -594,7 +646,9 @@ public class Panel extends JFrame {
         }
         c.setProperty(Measures.ITEM, it.name);
         List<Roi> same = Measures.of(rois, it.name);
-        if (it.many()) {
+        if (it.type == Item.Type.LENGTH) {
+            Measures.placeLength(setup, it, c, rois);
+        } else if (it.many()) {
             int max = 0;
             for (Roi x : same) {
                 String n = x.getName() == null ? "" : x.getName();
@@ -603,11 +657,12 @@ public class Panel extends JFrame {
             }
             c.setName(it.type == Item.Type.COLOUR ? it.name + "_" + (max + 1)
                     : same.isEmpty() ? it.name : it.name + "_" + (max + 1));
+            rois.add(c);
         } else {
             rois.removeAll(same);
             c.setName(it.name);
+            rois.add(c);
         }
-        rois.add(c);
         imp.deleteRoi();
         dirty = true;
         refreshItems();
@@ -685,7 +740,7 @@ public class Panel extends JFrame {
         Prefs.set("morphotracer.scale_mm." + setup.name, mm);
         boolean shared = setup.scaleMode != Setup.ScaleMode.EVERY_PHOTO && (forNext || !scale.set()
                 || scale.source.equals(Scale.SHARED));
-        Line l = (Line) r.clone();
+        Line l = (Line) view.toOriginal(r, origW, origH);
         l.setName(Measures.SCALE);
         l.setProperty(Measures.ITEM, Measures.SCALE);
         l.setProperty("mm", Csv.num(mm));
@@ -730,7 +785,8 @@ public class Panel extends JFrame {
         List<String> problems = Measures.missing(setup, rois, done, m);
         if (!scale.set())
             problems.add(0, "no scale (press S, or No scale possible)");
-        boolean resized = imp.getWidth() != origW || imp.getHeight() != origH;
+        int[] shown = view.size(origW, origH);
+        boolean resized = imp.getWidth() != shown[0] || imp.getHeight() != shown[1];
         if (resized)
             problems.add(0, "the photo was cropped, rotated or resized in ImageJ: the marks no longer match the original");
         if (resized && setup.training()) {
@@ -747,6 +803,8 @@ public class Panel extends JFrame {
         File f = photos.get(index);
         Map<String, String> row = row(setup, f.getName(), folderOf(f), fishId.getText().trim(), origW, origH, scale, m,
                 problems.isEmpty(), join(problems, "; "), notes.getText().trim());
+        row.put("view", view.toString());
+        row.put("view_for_next", Csv.bool(viewForNext.isSelected()));
         try {
             store.save(keyOf(index), row, m, rois, origW, origH);
         } catch (IOException e) {
@@ -779,6 +837,8 @@ public class Panel extends JFrame {
         r.put("px_per_mm", Csv.num(scale.ppm));
         r.put("scale_source", scale.set() ? scale.source : Csv.NA);
         r.put("scale_photo", Csv.text(scale.photo));
+        r.put("view", "none");
+        r.put("view_for_next", "FALSE");
         r.putAll(m.columns);
         r.put("complete", Csv.bool(complete));
         r.put("flags", Csv.text(flags));
@@ -852,7 +912,7 @@ public class Panel extends JFrame {
         Overlay ov = new Overlay();
         Item sel = selected();
         for (Roi r : rois) {
-            Roi c = (Roi) r.clone();
+            Roi c = view.toDisplay(r, origW, origH);
             String item = Measures.itemOf(r);
             Item it = setup.item(item);
             Color col = item.equals(Measures.SCALE) ? Color.CYAN : it == null ? Color.WHITE : parse(it.colour);

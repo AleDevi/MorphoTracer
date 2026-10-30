@@ -24,7 +24,7 @@ import java.util.List;
 /** Edit a setup: purpose, scale mode, fish id, body axis, and the table of items. Saved as <name>.json. */
 public class SetupDialog extends JDialog {
 
-    static final String[] COLS = {"Name", "Type", "Required", "From (point)", "To (point)", "Colour", "Description"};
+    static final String[] COLS = {"Name", "Type", "Required", "From (point)", "To (point)", "Continues (length)", "Colour", "Description"};
 
     final JTextField name = new JTextField(20);
     final JComboBox<Setup.Purpose> purpose = new JComboBox<Setup.Purpose>(Setup.Purpose.values());
@@ -37,6 +37,7 @@ public class SetupDialog extends JDialog {
     final JTextField axisFrom = new JTextField(12);
     final JTextField axisTo = new JTextField(12);
     final JTextField bodyPart = new JTextField(12);
+    final JTextField percentOf = new JTextField(16);
     final DefaultTableModel model = new DefaultTableModel(COLS, 0) {
         @Override
         public Class<?> getColumnClass(int c) {
@@ -57,11 +58,12 @@ public class SetupDialog extends JDialog {
         axisFrom.setText(s.axisFrom);
         axisTo.setText(s.axisTo);
         bodyPart.setText(s.bodyPart);
+        percentOf.setText(Panel.join(s.percentOf, ", "));
         for (Item it : s.items)
             addRow(it);
         table.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(new JComboBox<Item.Type>(Item.Type.values())));
         table.setRowHeight(22);
-        table.getColumnModel().getColumn(6).setPreferredWidth(260);
+        table.getColumnModel().getColumn(7).setPreferredWidth(260);
 
         JPanel form = new JPanel(new GridBagLayout());
         int y = 0;
@@ -75,7 +77,8 @@ public class SetupDialog extends JDialog {
         y = field(form, y, "", idResult, "");
         y = field(form, y, "Body axis from point", axisFrom, "for spot positions, e.g. snout");
         y = field(form, y, "Body axis to point", axisTo, "e.g. peduncle_end");
-        field(form, y, "Body part for depth", bodyPart, "e.g. body");
+        y = field(form, y, "Body part for depth", bodyPart, "e.g. body");
+        field(form, y, "Colour % of parts", percentOf, "parts that make 100% for <class>_percent, e.g. body, caudal (empty: no %)");
         javax.swing.event.DocumentListener test = new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) {
                 tryId();
@@ -176,7 +179,7 @@ public class SetupDialog extends JDialog {
     }
 
     void addRow(Item it) {
-        model.addRow(new Object[] {it.name, it.type, it.required, it.from, it.to, it.colour, it.label});
+        model.addRow(new Object[] {it.name, it.type, it.required, it.from, it.to, it.continues, it.colour, it.label});
     }
 
     void stopEditing() {
@@ -229,13 +232,15 @@ public class SetupDialog extends JDialog {
         s.axisFrom = axisFrom.getText().trim();
         s.axisTo = axisTo.getText().trim();
         s.bodyPart = bodyPart.getText().trim();
+        s.percentOf = Setup.names(percentOf.getText());
         for (int r = 0; r < model.getRowCount(); r++) {
             Object t = model.getValueAt(r, 1);
             Item.Type type = t instanceof Item.Type ? (Item.Type) t : Item.Type.valueOf(t.toString());
-            Item it = new Item(str(r, 0), type, Boolean.TRUE.equals(model.getValueAt(r, 2)), str(r, 5));
+            Item it = new Item(str(r, 0), type, Boolean.TRUE.equals(model.getValueAt(r, 2)), str(r, 6));
             it.from = str(r, 3);
             it.to = str(r, 4);
-            it.label = str(r, 6);
+            it.continues = str(r, 5);
+            it.label = str(r, 7);
             s.items.add(it);
         }
         return s;

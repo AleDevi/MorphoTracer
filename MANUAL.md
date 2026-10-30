@@ -1,6 +1,6 @@
 # MorphoTracer: Manual
 
-Version 0.2.0. The short step-by-step version is the [Quick guide](QUICK_GUIDE.md).
+Version 0.3.0. The short step-by-step version is the [Quick guide](QUICK_GUIDE.md).
 
 ## 1. What it is for
 
@@ -33,6 +33,7 @@ results folder (`setup.json`), so the results always say how they were measured.
 | Fish id from file name | optional regular expression; the part in `( )`, or the whole match, is the id. E.g. `M\d+` finds `M103` in `IMG_9860_M103.JPG`; `(\d+)_` finds `9860` in `9860_left.jpg`. A test field shows the result |
 | Body axis from / to point | two Point items (e.g. `snout`, `peduncle_end`): the axis used for spot positions |
 | Body part for depth | a Part item (e.g. `body`): used for the position of spots across the body |
+| Colour % of parts | Part items whose total area is 100% for `<class>_percent` (e.g. `body, caudal`); empty for no percentage |
 | Items | what is marked on every photo, in this order |
 
 **Add names from a Guppy Colour profile...** adds the landmarks, body parts and colour classes of a Guppy Colour
@@ -42,14 +43,35 @@ profile (`guppycolor/profiles/*.json`) with the same names the app uses. It is o
 
 | Type | What you draw | Result in `morphology.csv` | Other files |
 | --- | --- | --- | --- |
-| Length | a straight line, or a segmented line to follow a bent animal | `<name>_mm`: the length of the line | |
+| Length | a straight line, or a segmented line to follow a bent animal | `<name>_mm`: the length of the line (plus the length it continues) | its ends can set two Point items |
 | Length from points | nothing: it is the straight distance between two Point items (From, To) | `<name>_mm` | |
 | Point | one click | none | one row in `landmarks.csv`, a point in `landmarks.tps` |
 | Part | a polygon or freehand outline; several pieces are summed | `<name>_area_mm2` | the outline in `rois`, masks for training |
-| Colour class | one outline per spot | `<name>_area_mm2` (sum of the spots), `<name>_n` (number of spots), and in training setups `<name>_complete` | one row per spot in `spots.csv` |
+| Colour class | one outline per spot | `<name>_area_mm2` (sum of the spots), `<name>_n` (number of spots), `<name>_percent` (when the setup has *Colour % of parts*), and in training setups `<name>_complete` | one row per spot in `spots.csv` |
 | Count | several clicks with the multi-point tool | `<name>_n` | |
 
 *Required* items are checked at *Save fish*. Optional ones may be left out.
+
+### Lengths that set points and continue each other
+
+A Length can have:
+
+- **From** / **To**: Point items set by the start and the end of the line. They are placed (or moved) each time the
+  line is drawn, and are then done in the list; they can still be clicked by hand afterwards.
+- **Continues**: another Length it is added to. The new line is joined to the end of that length (its first vertex is
+  moved there), and its value is the sum of the two.
+
+The guppy example uses this for SL and TL, following the fish's shape: SL is a segmented line from the snout tip to
+the end of the caudal peduncle (*From* = snout, *To* = peduncle_end); TL *Continues* SL from the end of the peduncle to
+the tail tip (*To* = tail_tip), so `tl_mm` = `sl_mm` + the tail line. Drawing SL again moves the points and the start of
+the TL line with it.
+
+### Colour as a percentage of the animal
+
+*Colour % of parts* lists the Part items whose total area counts as 100% (body and caudal in the guppy example). Each
+colour class then gets `<class>_percent` = 100 x class area / total area of those parts. It is a ratio of pixels, so
+it needs no scale. It is `NA` when one of those parts is not drawn, or when the class is unknown (no spot and not
+confirmed *All spots done*).
 
 ## 3. Purpose
 
@@ -108,7 +130,18 @@ A photo that was already saved keeps its own scale when it is opened again, what
 Colours in the list: `[x]` done, `[!]` required and missing, `[ ]` optional and missing. Photo list: `[x]` complete,
 `[~]` saved but incomplete, `[ ]` not done.
 
-## 6. Save fish
+## 6. View: turning or mirroring a photo
+
+*Rotate left*, *Rotate right* (90 degrees) and *Mirror* (left-right) change how the photo is shown, e.g. to have every
+fish with the head on the left. With *also for the next photos of this folder* ticked, the next photos of that folder
+open turned the same way (also in a later session); unticked, it is for this photo only.
+
+Only the display is turned. Every mark is converted back and saved in the coordinates of the original photo file, so
+`landmarks.csv`, `spots.csv`, `rois` and `masks` always match the original photo, and turning a photo after marking it
+changes nothing in the results. Lengths and areas do not change with the view. `morphology.csv` records `view`
+(`none`, `r90`, `r180`, `r270`, `m`, `m+r90`...: mirrored first, then turned clockwise) and `view_for_next`.
+
+## 7. Save fish
 
 *Save fish* lists what is missing: required items, the scale, and in training setups the colour classes not confirmed
 complete. **Go back** returns to the photo; **Save anyway** saves it with `complete = FALSE` and the problems in
@@ -116,7 +149,7 @@ complete. **Go back** returns to the photo; **Save anyway** saves it with `compl
 
 Moving to another photo with unsaved changes asks whether to save them.
 
-## 7. Results
+## 8. Results
 
 The results of a setup are in the photo folder, in `results_<setup name>\`. Nothing else is written there, and the
 photos are never changed.
@@ -147,6 +180,7 @@ R. Text starting with `=`, `+`, `-` or `@` gets a leading `'` so Excel does not 
 | `setup`, `purpose`, `annotator`, `date` | how, by whom and when (date and time of the last save) |
 | `image_width`, `image_height` | size of the photo in pixels |
 | `px_per_mm`, `scale_source`, `scale_photo` | the scale (section 4) |
+| `view`, `view_for_next` | how the photo was shown (section 6) |
 | one block per item | section 2, in the setup's order |
 | `complete` | `TRUE` when nothing was missing at *Save fish* |
 | `flags` | what was missing, separated by `;` |
@@ -186,15 +220,16 @@ photo, and what another tool can import.
 `masks/<photo>_parts.png` and `_colours.png` (training only) are 8-bit images the size of the photo: 0 = nothing,
 then 1, 2, 3... for the Part (or Colour class) items in the setup's order. Where parts overlap, the later one wins.
 
-## 8. Good practice
+## 9. Good practice
 
-- Do not crop, rotate or resize photos in Fiji before marking: the coordinates must be those of the original file.
+- Do not crop, rotate or resize photos with Fiji's own menus before marking: the coordinates must be those of the
+  original file. Use MorphoTracer's *View* buttons to turn a photo instead.
 - Zoom in (`+`/`-` keys, or the scroll wheel with Ctrl) to trace spot edges; small errors on the edge add up on small spots.
 - Measure everything with the same setup; if the setup has to change mid-way, make a new one, so every results folder
   says how it was measured.
 - For training, a smaller number of fully traced fish is worth more than many partly traced ones.
 
-## 9. Files and security
+## 10. Files and security
 
 MorphoTracer writes only to the results folder inside the chosen photo folder, to `<your user folder>\.morphotracer\`
 (the setups) and to Fiji's preferences (last setup, last scale length). It does not use the network and does not

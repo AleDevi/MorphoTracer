@@ -1,5 +1,6 @@
 {
   "morphotracer_setup": 1,
+  "example_version": 3,
   "name": "guppy_male_example",
   "purpose": "BOTH",
   "annotator": "",
@@ -15,14 +16,18 @@
       "type": "LENGTH",
       "required": true,
       "colour": "#00ff00",
-      "label": "Standard length: snout tip to the end of the caudal peduncle"
+      "label": "Standard length: segmented line from the snout tip to the end of the caudal peduncle (sets snout and peduncle_end)",
+      "from": "snout",
+      "to": "peduncle_end"
     },
     {
       "name": "tl",
       "type": "LENGTH",
       "required": true,
       "colour": "#00ff00",
-      "label": "Total length: snout tip to the tail tip"
+      "label": "Total length = SL + line from the end of SL to the tail tip (sets tail_tip)",
+      "continues": "sl",
+      "to": "tail_tip"
     },
     {
       "name": "snout",
@@ -129,5 +134,9 @@
       "colour": "#3d9bff",
       "label": "Iridescent (blue, violet, white, green)"
     }
+  ],
+  "percent_of": [
+    "body",
+    "caudal"
   ]
 }

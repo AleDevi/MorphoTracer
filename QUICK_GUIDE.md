@@ -1,11 +1,11 @@
 # MorphoTracer: Quick guide
 
-Version 0.2.0. What to do, step by step. How it works is in the [Manual](MANUAL.md).
+Version 0.3.0. What to do, step by step. How it works is in the [Manual](MANUAL.md).
 
 ## Install (once)
 
 1. Close Fiji.
-2. Copy `MorphoTracer_-0.2.0.jar` into the `plugins` folder of Fiji (`Fiji.app\plugins`).
+2. Copy `MorphoTracer_-0.3.0.jar` into the `plugins` folder of Fiji (`Fiji.app\plugins`).
 3. Open Fiji: the menu **Plugins > MorphoTracer** opens the panel.
 
 To update: delete the old `MorphoTracer_-*.jar` from `plugins`, copy the new one, restart Fiji. Setups and results are kept.
@@ -21,20 +21,26 @@ To update: delete the old `MorphoTracer_-*.jar` from `plugins`, copy the new one
 ## Measure a folder of photos
 
 1. **Photo folder...**: choose the folder (subfolders are included). The first photo not done opens.
-2. **Scale**: with the line tool, draw a line over a known length on the graph paper, press **S**, type the mm (the last value is proposed), Enter.
+2. **View** (if needed): *Rotate left* / *Rotate right* / *Mirror*. With the box ticked the next photos of the folder
+   are turned the same way. Only the display turns; the marks are saved on the original photo.
+3. **Scale**: with the line tool, draw a line over a known length on the graph paper, press **S**, type the mm (the last value is proposed), Enter.
    - **Shift+S**: the new scale is also used by the next photos.
    - **No scale possible**: sizes stay in pixels, mm columns are `NA`.
    - In *Once per folder* or *Carry forward* mode the next photos already have the scale: check the line *Scale:* and go on.
-3. **Items**: the panel selects the first one to do and the right tool (the *Tool* buttons change it, e.g. to
+4. **Items**: the panel selects the first one to do and the right tool (the *Tool* buttons change it, e.g. to
    *Segmented line* or *Freehand*). After each mark it goes on to the next item. For each item:
    - **Point** (landmark): click on the photo, it goes to the next point by itself. Not visible? Press **N**.
-   - **Length**: draw a line (straight, or segmented to follow a bent fish), press **A**.
+   - **SL**: segmented line from the snout tip to the end of the caudal peduncle (click at each bend, double-click
+     at the end), **A**. *snout* and *peduncle_end* are set by its ends.
+   - **TL**: go on from the end of SL to the tail tip (it is joined to SL), double-click, **A**. TL = SL + this line;
+     *tail_tip* is set by its end.
+   - Other **Length**: draw a line (straight or segmented), press **A**.
    - **Part** (body, caudal fin...): draw around it with the polygon or freehand tool, press **A**.
    - **Colour class**: draw around one spot, **A**; repeat for every spot of that colour; then **All spots done** (also when the fish has none).
    - **Count**: click each object with the multi-point tool, press **A**.
    - Wrong? **Remove last** removes the last mark of the selected item. Keys **1-9** select an item.
-4. **Fish id**: read from the file name if the setup has a pattern, otherwise type it.
-5. **Save fish**: it checks what is missing, saves, and opens the next photo. *Save anyway* saves an incomplete fish (marked `complete = FALSE`).
+5. **Fish id**: read from the file name if the setup has a pattern, otherwise type it.
+6. **Save fish**: it checks what is missing, saves, and opens the next photo. *Save anyway* saves an incomplete fish (marked `complete = FALSE`).
 
 To go on another day: open *Plugins > MorphoTracer*; it reopens the last photo folder at the first photo not done
 (or choose the folder again with **Photo folder...** and the same setup). Everything saved is kept.

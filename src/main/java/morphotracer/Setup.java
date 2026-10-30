@@ -57,6 +57,8 @@ public class Setup {
     public String axisFrom = "";
     public String axisTo = "";
     public String bodyPart = "";
+    /** Parts whose total area is 100% for the colour classes' <class>_percent (e.g. body, caudal); empty = no percent. */
+    public List<String> percentOf = new ArrayList<String>();
     public List<Item> items = new ArrayList<Item>();
 
     public boolean training() {
@@ -113,12 +115,23 @@ public class Setup {
             seen.add(it.name.toLowerCase());
             if (it.type == Item.Type.LENGTH_FROM_POINTS && (!isPoint(it.from) || !isPoint(it.to)))
                 p.add("Length '" + it.name + "' needs two Point items in 'From' and 'To'.");
+            if (it.type == Item.Type.LENGTH) {
+                if (!it.from.isEmpty() && !isPoint(it.from) || !it.to.isEmpty() && !isPoint(it.to))
+                    p.add("Length '" + it.name + "': 'From' and 'To' must be Point items (or empty).");
+                if (!it.continues.isEmpty() && !continuesOk(it))
+                    p.add("Length '" + it.name + "': 'Continues' must be another Length item, without loops.");
+            } else if (!it.continues.isEmpty()) {
+                p.add("Only a Length can continue another length ('" + it.name + "').");
+            }
         }
         if (!axisFrom.isEmpty() || !axisTo.isEmpty())
             if (!isPoint(axisFrom) || !isPoint(axisTo))
                 p.add("The body axis needs two Point items.");
         if (!bodyPart.isEmpty() && (item(bodyPart) == null || item(bodyPart).type != Item.Type.PART))
             p.add("The body part for depth must be a Part item.");
+        for (String n : percentOf)
+            if (item(n) == null || item(n).type != Item.Type.PART)
+                p.add("Percent of: '" + n + "' is not a Part item.");
         if (!idPattern.trim().isEmpty()) {
             try {
                 Pattern.compile(idPattern);
@@ -129,6 +142,28 @@ public class Setup {
         if (scaleMm <= 0)
             p.add("The known scale length must be more than 0 mm.");
         return p;
+    }
+
+    private boolean continuesOk(Item it) {
+        Item cur = it;
+        for (int k = 0; k <= items.size(); k++) {
+            Item base = item(cur.continues);
+            if (base == null || base.type != Item.Type.LENGTH || base == it)
+                return false;
+            if (base.continues.isEmpty())
+                return true;
+            cur = base;
+        }
+        return false;
+    }
+
+    /** "body, caudal" -> [body, caudal]. */
+    public static List<String> names(String text) {
+        List<String> out = new ArrayList<String>();
+        for (String s : text.split("[,;\\s]+"))
+            if (!s.trim().isEmpty())
+                out.add(s.trim());
+        return out;
     }
 
     private boolean isPoint(String n) {
@@ -148,6 +183,7 @@ public class Setup {
         m.put("axis_from", axisFrom);
         m.put("axis_to", axisTo);
         m.put("body_part", bodyPart);
+        m.put("percent_of", new ArrayList<Object>(percentOf));
         List<Object> a = new ArrayList<Object>();
         for (Item it : items)
             a.add(it.toMap());
@@ -167,6 +203,11 @@ public class Setup {
         s.axisFrom = Json.str(m, "axis_from", "");
         s.axisTo = Json.str(m, "axis_to", "");
         s.bodyPart = Json.str(m, "body_part", "");
+        Object pc = m.get("percent_of");
+        if (pc instanceof List)
+            for (Object o : (List<Object>) pc)
+                if (o != null)
+                    s.percentOf.add(o.toString());
         Object items = m.get("items");
         if (items instanceof List)
             for (Object o : (List<Object>) items)

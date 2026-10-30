@@ -7,7 +7,7 @@ import java.util.Map;
 public class Item {
 
     public enum Type {
-        LENGTH("Length", "a straight or segmented line"),
+        LENGTH("Length", "a straight or segmented line; From/To: points set by its ends; Continues: added to another length"),
         LENGTH_FROM_POINTS("Length from points", "computed between two points, nothing to draw"),
         POINT("Point", "one click (landmark)"),
         PART("Part", "a polygon around a body part"),
@@ -32,9 +32,12 @@ public class Item {
     public Type type;
     public boolean required;
     public String colour;
-    /** LENGTH_FROM_POINTS only: the two POINT items. */
+    /** LENGTH_FROM_POINTS: the two POINT items it is computed from.
+     *  LENGTH: the POINT items set by the start and the end of the line (optional). */
     public String from = "";
     public String to = "";
+    /** LENGTH only: another length this one continues (TL = SL + the line from the end of SL to the tail tip). */
+    public String continues = "";
     /** Longer description shown in the panel (e.g. from a profile). */
     public String label = "";
 
@@ -71,10 +74,12 @@ public class Item {
         m.put("type", type.name());
         m.put("required", required);
         m.put("colour", colour);
-        if (type == Type.LENGTH_FROM_POINTS) {
+        if (!from.isEmpty())
             m.put("from", from);
+        if (!to.isEmpty())
             m.put("to", to);
-        }
+        if (!continues.isEmpty())
+            m.put("continues", continues);
         if (!label.isEmpty())
             m.put("label", label);
         return m;
@@ -85,6 +90,7 @@ public class Item {
                 Json.bool(m, "required", false), Json.str(m, "colour", ""));
         it.from = Json.str(m, "from", "");
         it.to = Json.str(m, "to", "");
+        it.continues = Json.str(m, "continues", "");
         it.label = Json.str(m, "label", "");
         return it;
     }

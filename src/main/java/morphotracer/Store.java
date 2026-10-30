@@ -34,7 +34,7 @@ public class Store {
 
     public static final List<String> FIXED = Collections.unmodifiableList(Arrays.asList(
             "photo", "folder", "fish_id", "setup", "purpose", "annotator", "date",
-            "image_width", "image_height", "px_per_mm", "scale_source", "scale_photo"));
+            "image_width", "image_height", "px_per_mm", "scale_source", "scale_photo", "view", "view_for_next"));
     public static final List<String> END = Collections.unmodifiableList(Arrays.asList("complete", "flags", "notes"));
     static final List<String> POINT_COLS = Arrays.asList("photo", "folder", "fish_id", "landmark", "x_px", "y_px", "x_mm", "y_mm");
     static final List<String> SPOT_COLS = Arrays.asList("photo", "folder", "fish_id", "class", "spot", "area_px", "area_mm2",
@@ -284,6 +284,16 @@ public class Store {
             if (Csv.parseNum(r.get("px_per_mm")) != null && (best == null || r.get("date").compareTo(best.get("date")) >= 0))
                 best = r;
         return best;
+    }
+
+    /** View of the last photo saved in a folder with "also for the next photos", or none. */
+    public View lastView(String folder) {
+        Map<String, String> best = null;
+        for (Map<String, String> r : rows.values())
+            if (eq(r.get("folder"), folder) && "TRUE".equals(r.get("view_for_next"))
+                    && (best == null || r.get("date").compareTo(best.get("date")) >= 0))
+                best = r;
+        return best == null ? View.NONE : View.parse(best.get("view"));
     }
 
     private static boolean eq(String a, String b) {
