@@ -4,9 +4,9 @@ Version 0.3.1. What to do, step by step. How it works is in the [Manual](MANUAL.
 
 ## Install (once)
 
-1. Close Fiji.
-2. Copy `MorphoTracer_-0.3.1.jar` into the `plugins` folder of Fiji (`Fiji.app\plugins`).
-3. Open Fiji: the menu **Plugins > MorphoTracer** opens the panel.
+1. Close ImageJ or Fiji.
+2. Copy `MorphoTracer_-0.3.1.jar` into the `plugins` folder of Fiji (`Fiji.app\plugins`) or ImageJ ('ImageJ\plugins').
+3. Open ImageJ/Fiji: the menu **Plugins > MorphoTracer** opens the panel.
 
 To update: delete the old `MorphoTracer_-*.jar` from `plugins`, copy the new one, restart Fiji. Setups and results are kept.
 
