@@ -1,0 +1,27 @@
+name: release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: mvn -B package
+      - name: Release with the jar and the CHANGELOG section of this version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          jar="target/MorphoTracer_-$v.jar"
+          test -f "$jar"
+          (cd target && sha256sum "MorphoTracer_-$v.jar" > "MorphoTracer_-$v.jar.sha256")
+          awk -v v="$v" '$0 ~ "^## "v" " {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
+          gh release create "$GITHUB_REF_NAME" "$jar" "$jar.sha256" QUICK_GUIDE.md MANUAL.md \
+            --title "MorphoTracer $v" --notes-file notes.md

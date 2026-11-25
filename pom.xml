@@ -9,6 +9,14 @@
   <name>MorphoTracer</name>
   <description>Fiji plugin: measure animals by hand on photos and save the measures as annotations for training.</description>
 
+  <url>https://github.com/AleDevi/MorphoTracer</url>
+  <licenses>
+    <license>
+      <name>GNU General Public License v3.0</name>
+      <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+    </license>
+  </licenses>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>8</maven.compiler.release>
