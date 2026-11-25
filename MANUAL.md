@@ -4,7 +4,7 @@ Version 0.3.1. The short step-by-step version is the [Quick guide](QUICK_GUIDE.m
 
 ## 1. What it is for
 
-MorphoTracer is a Fiji plugin for measuring animals by hand on photos. It serves two purposes, which can overlap:
+MorphoTracer is a ImageJ/Fiji plugin for measuring animals by hand on photos. It serves two purposes, which can overlap:
 
 1. **Measures**: lengths, areas and counts per individual, for the analysis, as one would take them in ImageJ, but
    always with the same names, the same order and one table at the end.
