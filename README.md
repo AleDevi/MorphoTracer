@@ -1,6 +1,6 @@
 # MorphoTracer
 
-A Fiji plugin to measure animals by hand on photos (lengths, areas, counts, landmarks, colour spots) and to save the
+An ImageJ/Fiji plugin to measure animals by hand on photos (lengths, areas, counts, landmarks, colour spots) and to save the
 same marks as annotations for training image-analysis tools such as Guppy Colour.
 
 - **Use it**: [Quick guide](QUICK_GUIDE.md)
@@ -11,7 +11,7 @@ same marks as annotations for training image-analysis tools such as Guppy Colour
 
 1. Download `MorphoTracer_-<version>.jar` from the [Releases](https://github.com/AleDevi/MorphoTracer/releases) page
    (the `.sha256` file next to it lets you check the download).
-2. Copy it into `Fiji.app/plugins` (remove an older `MorphoTracer_-*.jar` first) and restart Fiji.
+2. Copy it into `Fiji.app/plugins` or 'imageJ/plugins' (remove an older `MorphoTracer_-*.jar` first) on your PC and restart the software.
 3. Menu: *Plugins > MorphoTracer*.
 
 Setups are kept in `<your user folder>/.morphotracer/setups`, results next to the photos in `results_<setup>/`; both
