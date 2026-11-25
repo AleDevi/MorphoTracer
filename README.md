@@ -26,8 +26,8 @@ MorphoTracer is free software under the [GNU General Public License v3.0](LICENS
 
 Java 8 bytecode, built with Maven: `mvn package` gives `target/MorphoTracer_-<version>.jar` (tests run on synthetic
 ROIs without a window). ImageJ (`net.imagej:ij`) is the only dependency, and Fiji provides it.
-GitHub Actions builds and tests every push; pushing a tag `v<version>` publishes a release with the `.jar`, its
-`.sha256` and that version's CHANGELOG section.
+GitHub Actions builds and tests every push (the built `.jar` is kept as a build artifact). Releases are made by hand:
+attach `MorphoTracer_-<version>.jar` and its `.sha256` and use the CHANGELOG section of that version as notes.
 
 | File | What it does |
 | --- | --- |
