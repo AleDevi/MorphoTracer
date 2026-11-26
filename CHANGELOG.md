@@ -55,4 +55,3 @@ First version.
 - *Import hand annotations* in Guppy Colour (reads `rois/` or `masks/`).
 - Several animals in one photo.
 - Fiji update site, so Fiji updates the plugin by itself.
-- Own GitHub repository.
